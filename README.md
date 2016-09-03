@@ -33,4 +33,3 @@ python fa_client.py <FireAway server IP> <Fireaway Server Port> <Client mode (0 
 To start the application spoofing client:
   ```
 python fa_spoof.py <FireAway Server IP> <Fireaway Server Port> <Client mode (0 or 1)>
-
