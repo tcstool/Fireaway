@@ -1,5 +1,4 @@
 #!/usr/bin/python
-__author__ = 'Russell Butturini'
 
 import socket
 import sys
@@ -75,12 +74,13 @@ def sendFile(server, port):
     sourceFile = raw_input('Enter filename to send: ')
     pieceSize = raw_input('Enter chunk size to send (be sure to account for app spoofing size: ')
     
-    with open (sourceFile) as 
+    with open (sourceFile) as f:
+        print 'App spoof'
     
 
 
 def printHelp():
-    print 'Fireaway Exfiltration Client v0.1'
+    print 'Fireaway Exfiltration Spoofer v0.1'
     print 'Usage:  fa_client <fa_server IP> <port> <mode>'
     print 'Valid options for mode:'
     print '0-Send random test data to find maximum leaked data fragment size'

