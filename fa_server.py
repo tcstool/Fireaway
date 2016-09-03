@@ -46,7 +46,7 @@ def getData(conn):
             print 'Got the same or lower amount of data on two consecutive runs.  If sending test data, maximum data leak size may have been reached.'
 
         fo = open('./ReceivedData.txt','wb')
-        fo.write(str(data)+ '\n')
+        fo.write(str(data))
         fo.close()
 
 def printHelp():
