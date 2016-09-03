@@ -1,7 +1,5 @@
 #!/usr/bin/python
 
-__author__ = 'Russell Butturini'
-
 import socket
 import sys
 from thread import *
@@ -34,6 +32,7 @@ def startServer(port):
 
 def getData(conn):
     dataSizes = []
+
     while True:
         data = conn.recv(16384)
 
@@ -43,9 +42,12 @@ def getData(conn):
         print 'Received ' + str(len(data)) + 'bytes.'
         dataSizes.append(len(data))
 
-        if len(dataSizes) > 1 and dataSizes[len(dataSizes)-1] == dataSizes[len(dataSizes)-2]:
-            print 'Got the same amount of data on two consecutive runs.  Maximum data leak size may have been reached.'
+        if len(dataSizes) > 1 and dataSizes[len(dataSizes)-1] <= dataSizes[len(dataSizes)-2]:
+            print 'Got the same or lower amount of data on two consecutive runs.  If sending test data, maximum data leak size may have been reached.'
 
+        fo = open('./ReceivedData.txt','wb')
+        fo.write(str(data)+ '\n')
+        fo.close()
 
 def printHelp():
     print 'Fireaway Server v0.1'
