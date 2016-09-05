@@ -81,7 +81,7 @@ def sendFile(server, port):
 
 def printHelp():
     print 'Fireaway Exfiltration Spoofer v0.1'
-    print 'Usage:  fa_client <fa_server IP> <port> <mode>'
+    print 'Usage:  fa_spoof <fa_server IP> <port> <mode>'
     print 'Valid options for mode:'
     print '0-Send random test data to find maximum leaked data fragment size'
     print '1-Open a file for exfiltration'

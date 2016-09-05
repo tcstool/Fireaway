@@ -5,7 +5,7 @@ import sys
 from thread import *
 
 def main():
-    if sys.argv[1]  == '?' or len (sys.argv) != 2 or sys.argv[1].isdigit() == False or int(sys.argv[1]) < 1 or int(sys.argv[1]) > 65535 :
+    if len(sys.argv) < 2 or sys.argv[1]  == '?' or len (sys.argv) != 2 or sys.argv[1].isdigit() == False or int(sys.argv[1]) < 1 or int(sys.argv[1]) > 65535:
         printHelp()
 
     else:

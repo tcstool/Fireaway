@@ -52,7 +52,7 @@ def testChunk(server, port):
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.settimeout(15)
             s.connect((server, port))
-            print 'sending ' + str(curBytes) + ' of test data.  Watch the server to see how much is received.'
+            print 'sending ' + str(curBytes) + ' bytes of test data.  Watch the server to see how much is received.'
             s.send(testData)
             s.close()
 
@@ -104,7 +104,7 @@ def printHelp():
     print 'Usage:  fa_client <fa_server IP> <port> <mode>'
     print 'Valid options for mode:'
     print '0-Send random test data to find maximum leaked data fragment size'
-    print '1-Open a file for exfiltration'
+    print '1-Exfiltrate a file'
     sys.exit()
 
 
