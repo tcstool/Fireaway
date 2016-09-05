@@ -43,9 +43,9 @@ def getData(conn):
         dataSizes.append(len(data))
 
         if len(dataSizes) > 1 and dataSizes[len(dataSizes)-1] <= dataSizes[len(dataSizes)-2]:
-            print 'Got the same or lower amount of data on two consecutive runs.  If sending test data, maximum data leak size may have been reached.'
+            print 'Got the same or lower amount of data on two consecutive connections.  If sending test data, maximum data leak size may have been reached.'
 
-        fo = open('./ReceivedData.txt','wb')
+        fo = open('./ReceivedData.txt','a')
         fo.write(str(data))
         fo.close()
 
