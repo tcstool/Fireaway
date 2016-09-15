@@ -33,3 +33,6 @@ python fa_client.py <FireAway server IP> <Fireaway Server Port> <Client mode (0 
 To start the application spoofing client:
   ```
 python fa_spoof.py <FireAway Server IP> <Fireaway Server Port> <Client mode (0 or 1)>
+```
+
+Application spoofing will randomly insert HTTP headers with the data chunks to pollute the logs with various applications in order to mask the data exfiltration.
