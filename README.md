@@ -1,15 +1,16 @@
 FireAway-Next Generation Firewall Bypass Tool
 =========
-*v0.1*
+*v0.2*
 
-Fireaway is a tool for auditing, bypassing, and exfiltrating data against layer 7/AppID inspection rules on next generation firewalls.  These tactics are based on the principle of having to allow connections to establish through the NGFW in order to see layer 7 data to filter, as well as spoofing applications to hide communication channels inside the firewall logs as normal user traffic, such as Internet surfing.
+Fireaway is a tool for auditing, bypassing, and exfiltrating data against layer 7/AppID inspection rules on next generation firewalls, as well as other deep packet inspection defense mechanisms, such as data loss prevention (DLP) and application aware proxies.  These tactics are based on the principle of having to allow connections to establish through the NGFW in order to see layer 7 data to filter, as well as spoofing applications to hide communication channels inside the firewall logs as normal user traffic, such as Internet surfing.
 
  **Starting the FireAway Server:**
 Typically the FireAway server would be started on the egress side of the firewall (such as a server on the Internet), and listen on a port believed to be closed to see if any application based rules allow traffic out on this port:
  
  ```
-python fa_server.py <port to listen on>
+python fa_server.py <port to listen on>  <mode>
 ```
+
 
 All data received by the server on this port will be saved to the file ReceivedData.txt in the directory the server was launched from.  If the server detects differing sizes in the amount of data received (indicating firewall filtering has kicked in), this output will be shown on the server console:
 

